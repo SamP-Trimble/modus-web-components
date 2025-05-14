@@ -113,7 +113,7 @@ export default class ModusTableCore {
           pageSize: pagination || rowsExpandable ? (currentPageSize ? currentPageSize : pageSizeList[0]) : data?.length,
         },
       },
-      enableRowSelection: rowSelection,
+      enableRowSelection: rowSelection && rowSelectionOptions.isDisabled,
       enableMultiRowSelection: multiple,
       enableSubRowSelection: multiple && subRowSelection,
       enableSorting: sort,
