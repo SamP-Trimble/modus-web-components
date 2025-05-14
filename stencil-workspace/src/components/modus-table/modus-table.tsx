@@ -242,6 +242,7 @@ export class ModusTable {
   @Prop() rowSelectionOptions: ModusTableRowSelectionOptions = {
     multiple: false,
     subRowSelection: false,
+    isDisabled: () => false
   };
   @Watch('rowSelectionOptions') onRowSelectionOptionsChange(
     newVal: ModusTableRowSelectionOptions,
@@ -738,7 +739,7 @@ export class ModusTable {
     this.tableCore.getTableInstance().resetRowSelection();
     for (let i = start; i <= end; i++) {
       const row = rows[i];
-      if (row) {
+      if (row && row.getCanSelect()) {
         row.toggleSelected(true, { selectChildren: true });
       }
     }
@@ -758,7 +759,7 @@ export class ModusTable {
       this.tableCore.getTableInstance().resetRowSelection();
       for (let i = start; i <= end; i++) {
         const row = rows[i];
-        if (row) {
+        if (row && row.getCanSelect()) {
           row.toggleSelected(true, { selectChildren: true });
         }
       }
@@ -766,7 +767,7 @@ export class ModusTable {
     }
 
     const row = rows[currentRowIndex];
-    if (row) {
+    if (row && row.getCanSelect()) {
       const isSelected = row.getIsSelected();
       if (!isSelected) {
         this.anchorRowIndex = currentRowIndex;

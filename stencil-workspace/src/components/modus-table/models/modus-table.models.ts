@@ -6,6 +6,7 @@ import {
   ColumnSort,
   ExpandedState,
   PaginationState,
+  Row,
   RowData,
   SortingFnOption,
   SortingState,
@@ -155,6 +156,7 @@ export interface ModusTableRowSelectionOptions {
   multiple?: boolean;
   subRowSelection?: boolean;
   preSelectedRows?: string[];
+  isDisabled?: (row: Row<unknown>) => boolean;
 }
 
 export interface ModusTableManualPaginationOptions {
