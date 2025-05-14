@@ -65,9 +65,9 @@ export const ModusTableBody: FunctionalComponent<ModusTableBodyProps> = ({ conte
   }
 
   function handleRowClick(event: MouseEvent, currentRowIndex: number, row: Row<unknown>): void {
-    if (
-      (!rowSelectionOptions.subRowSelection && rowSelectionOptions.multiple && rowsExpandable) ||
-      !rowSelectionOptions.multiple
+    if (row.getCanSelect() &&
+      ((!rowSelectionOptions.subRowSelection && rowSelectionOptions.multiple && rowsExpandable) ||
+      !rowSelectionOptions.multiple)
     ) {
       row.toggleSelected();
       return;
@@ -96,9 +96,9 @@ export const ModusTableBody: FunctionalComponent<ModusTableBodyProps> = ({ conte
     }
   }
   function handleCheckboxKeyDown(row: Row<unknown>): void {
-    if (
-      (!rowSelectionOptions.subRowSelection && rowSelectionOptions.multiple && rowsExpandable) ||
-      !rowSelectionOptions.multiple
+    if (row.getCanSelect() &&
+      ((!rowSelectionOptions.subRowSelection && rowSelectionOptions.multiple && rowsExpandable) ||
+      !rowSelectionOptions.multiple)
     ) {
       row.toggleSelected();
       return;
@@ -115,7 +115,7 @@ export const ModusTableBody: FunctionalComponent<ModusTableBodyProps> = ({ conte
         return (
           <tr
             key={id}
-            class={{ 'enable-hover': hover, 'row-selected': isChecked }}
+            class={{ 'enable-hover': hover, 'row-selected': isChecked, 'disabled': row.getCanSelect() }}
             onClick={(event) => handleRowClick(event as MouseEvent, row.index, row)}
             {...(rowSelectionOptions.multiple && {
               onKeyDown: (event) => handleKeyDown(event as KeyboardEvent, row.index),
