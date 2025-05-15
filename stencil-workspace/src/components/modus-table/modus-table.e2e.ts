@@ -1,5 +1,6 @@
 import { E2EPage, newE2EPage } from '@stencil/core/testing';
-import { ModusTableRowAction } from '../../interfaces';
+import { ModusTableRowAction, ModusTableRowSelectionOptions } from '../../interfaces';
+import { Row } from '@tanstack/table-core';
 
 const MockColumns = [
   {
@@ -81,6 +82,43 @@ describe('modus-table', () => {
     row = await page.findAll('modus-table >>> [data-test-id="main-table"] td');
     expect(row.length).toBeGreaterThan(0);
     expect(row[0].textContent).toBe(MockData[0].mockColumnOne);
+  });
+
+  it('Handles change to rowSelectionOptions prop', async () => {
+    const component = await page.find('modus-table');
+    component.setProperty('rowSelection', true);
+
+    await page.waitForChanges();
+
+    const initialOptions: ModusTableRowSelectionOptions = await component.getProperty('rowSelectionOptions');
+    const newOptions: ModusTableRowSelectionOptions = {
+      multiple: false,
+      preSelectedRows: [],
+      isDisabled: () => true // Disable all rows in table
+    }
+
+    expect(newOptions).not.toEqual(initialOptions);
+
+    await page.$eval(
+      'modus-table',
+      (element, { rowSelectionOptions }) => {
+        element.rowSelectionOptions = rowSelectionOptions
+      },
+      {
+        rowSelectionOptions: newOptions
+      }
+    );
+
+    await page.waitForChanges();
+
+    const updatedComponent = await page.find('modus-table');
+
+    const updatedOptions: ModusTableRowSelectionOptions = await updatedComponent.getProperty('rowSelectionOptions');
+    expect(updatedOptions).not.toEqual(initialOptions);
+    expect(updatedOptions.multiple).toEqual(newOptions.multiple);
+    expect(updatedOptions.preSelectedRows).toEqual(newOptions.preSelectedRows);
+    expect(updatedOptions.subRowSelection).toEqual(newOptions.subRowSelection);
+    expect(updatedOptions.isDisabled).toEqual(newOptions.isDisabled);
   });
 
   it('Display hover on rows when hover is enabled', async () => {
@@ -582,6 +620,46 @@ describe('modus-table', () => {
     await page.waitForChanges();
 
     expect(rowSelectionChange).toHaveReceivedEvent();
+  });
+
+  it('Disables selection on rows', async () => {
+    page = await newE2EPage();
+    await page.setContent('<modus-table row-selection />');
+
+    const component = await page.find('modus-table');
+
+    const rowSelectionChange = await page.spyOnEvent('rowSelectionChange');
+
+    component.setProperty('columns', MockColumns);
+    component.setProperty('data', MockData);
+    component.setProperty('rowSelection', true);
+    component.setProperty('rowSelectionOptions', {
+      multiple: false,
+      preSelectedRows: [],
+      isDisabled: (row: Row<{ mockColumnTwo: number }>) => row.original.mockColumnTwo === 900293 // Disable row two in table
+    } as ModusTableRowSelectionOptions);
+
+    await page.waitForChanges();
+
+    const cells = (await page.findAll('modus-table >>> td')).filter((cell) => cell.className.includes('row-checkbox'));
+
+    cells[1].focus();
+
+    await page.waitForChanges();
+
+    await cells[1].click();
+    await page.waitForChanges();
+
+    expect(rowSelectionChange).not.toHaveReceivedEventDetail([{ ...MockData[1], id: "1" }]);
+
+    cells[0].focus();
+
+    await page.waitForChanges();
+
+    await cells[0].click();
+    await page.waitForChanges();
+
+    expect(rowSelectionChange).toHaveReceivedEventDetail([{ ...MockData[0], id: "0" }]);
   });
 
   it('Displays row actions', async () => {
