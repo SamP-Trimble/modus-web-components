@@ -251,11 +251,17 @@ export class ModusTable {
     if (
       newVal.multiple !== oldVal.multiple ||
       newVal.subRowSelection !== oldVal.subRowSelection ||
-      newVal.preSelectedRows !== oldVal.preSelectedRows
+      newVal.preSelectedRows !== oldVal.preSelectedRows ||
+      newVal.isDisabled !== oldVal.isDisabled
     ) {
       this.tableCore?.setOptions('enableMultiRowSelection', newVal.multiple);
       this.tableCore?.setState('rowSelection', newVal.preSelectedRows);
       this.tableCore?.setState('subRowSelection', newVal.subRowSelection);
+      if (newVal.isDisabled) {
+        this.tableCore?.setOptions('enableRowSelection', (row) => this.rowSelection && !(newVal.isDisabled(row)));
+      } else {
+        this.tableCore?.setOptions('enableRowSelection', this.rowSelection);
+      }
     }
   }
 
@@ -317,7 +323,7 @@ export class ModusTable {
   @Event() rowExpanded: EventEmitter<ModusTableExpandedState>;
 
   /** Emits rows selected */
-  @Event() rowSelectionChange: EventEmitter<unknown>;
+  @Event({ bubbles: true }) rowSelectionChange: EventEmitter<unknown>;
 
   /** Emits column sort order */
   @Event() sortChange: EventEmitter<ModusTableSortingState>;
@@ -783,9 +789,11 @@ export class ModusTable {
       this.tableCore
         .getTableInstance()
         .getSelectedRowModel()
-        .flatRows.map((row) => {
+        .flatRows
+        .filter((row => row.getCanSelect()))
+        .map((row) => {
           row.original['id'] = row.id;
-          return row.original;
+            return row.original;
         })
     );
   }
