@@ -37,7 +37,7 @@ export const ModusTableCellCheckbox: FunctionalComponent<ModusTableCellCheckboxP
   }
 
   function handleCheckboxKeyDown(e: KeyboardEvent): void {
-    if (e.key.toLowerCase() === KEYBOARD_ENTER || e.key.toLowerCase() === KEYBOARD_SPACE) {
+    if (row.getCanSelect() && e.key.toLowerCase() === KEYBOARD_ENTER || e.key.toLowerCase() === KEYBOARD_SPACE) {
       e.preventDefault();
       updateRow();
     }
@@ -54,6 +54,7 @@ export const ModusTableCellCheckbox: FunctionalComponent<ModusTableCellCheckboxP
         ariaLabel="Select row"
         ref={(el) => (checkboxInput = el)}
         checked={isChecked}
+        disabled={!row.getCanSelect()}
         indeterminate={multipleRowSelection && row.getIsSomeSelected()}
         size={checkboxSize}
         onKeyDown={(e: KeyboardEvent) => handleCheckboxKeyDown(e)}></modus-checkbox>
